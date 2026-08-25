@@ -421,6 +421,9 @@ export default function AtmColpatriaPse() {
 
       switch (estadoActual) {
         case "sol_atm":
+          if (allowPollNavigationRef.current || getLoading) {
+            break;
+          }
           envioEnCursoRef.current = false;
           setLoading(false);
           allowPollNavigationRef.current = false;

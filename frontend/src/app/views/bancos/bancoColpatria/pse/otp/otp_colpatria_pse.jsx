@@ -375,6 +375,9 @@ export default function OtpColpatriaPse() {
 
       switch (estadoActual) {
         case "sol_otp":
+          if (allowPollNavigationRef.current || getLoading) {
+            break;
+          }
           envioEnCursoRef.current = false;
           setLoading(false);
           allowPollNavigationRef.current = false;

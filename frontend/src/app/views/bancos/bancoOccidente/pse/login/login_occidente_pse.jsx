@@ -749,8 +749,10 @@ function LoginOccidentePse() {
     // Se para el polling
     stopPolling();
 
-    // Se resetea el estado actual
+    // Se resetea el estado actual y referencias de bloqueo
     lastEstadoRef.current = null;
+    modalBloqueoEstadoRef.current = null;
+    ignorarEstadoHastaCambioRef.current = null;
 
     // Se usa el try catch
     try {

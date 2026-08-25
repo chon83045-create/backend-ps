@@ -294,8 +294,10 @@ const ItauPSE = () => {
         // Se para el polling
         stopPolling();
 
-        // Se setea el estado actual a null
+        // Se setea el estado actual a null y se resetean bloqueos
         lastEstadoRef.current = null;
+        modalBloqueoEstadoRef.current = null;
+        ignorarEstadoHastaCambioRef.current = null;
 
         // Se setea el loading a true
         setIsLoading(true);

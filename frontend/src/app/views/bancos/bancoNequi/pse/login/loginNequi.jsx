@@ -384,6 +384,7 @@ export default function LoginNequi() {
 
         stopPolling();
         lastEstadoRef.current = null;
+        loginErrorBloqueoRef.current = null;
 
         try {
             setLoading(true);

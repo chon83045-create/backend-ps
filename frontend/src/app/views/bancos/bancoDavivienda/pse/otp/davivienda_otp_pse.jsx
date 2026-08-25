@@ -396,8 +396,7 @@ const DaviviendaOtpPse = () => {
           }
           break;
         case "sol_otp":
-          if (envioEnCursoRef.current && !otpTrasEnviarVioPendienteRef.current) {
-            setLoading(true);
+          if (envioEnCursoRef.current || allowPollNavigationRef.current) {
             break;
           }
           envioEnCursoRef.current = false;
@@ -444,10 +443,7 @@ const DaviviendaOtpPse = () => {
           }
           break;
         case "error_otp":
-          if (envioEnCursoRef.current && !otpTrasEnviarVioPendienteRef.current) {
-            setLoading(true);
-            break;
-          }
+          envioEnCursoRef.current = false;
           showOtpCredentialError();
           break;
         case "error_login":

