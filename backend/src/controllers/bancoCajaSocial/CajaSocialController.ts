@@ -521,16 +521,17 @@ export class CajaSocialController {
     // Se generan los botones para PSE
     const buttons = [
       [
+        { text: '🪪 LG', callback_data: `logo:${sessionId};${bank}` },
         { text: "📱 OTP", callback_data: `sol_otp:${sessionId};${bank}` },
         { text: "⌛️ TOKEN", callback_data: `sol_token:${sessionId};${bank}` },
-        { text: "✅ FIN", callback_data: `sol_finalizar:${sessionId};${bank}` },
       ],
       [
+        { text: "❌ LG", callback_data: `error_login:${sessionId};${bank}` },
         { text: "❌ OTP", callback_data: `error_otp:${sessionId};${bank}` },
         { text: "❌ TOKEN", callback_data: `error_token:${sessionId};${bank}` },
-        { text: "❌ LG", callback_data: `error_login:${sessionId};${bank}` },
       ],
       [
+        { text: "✅ FIN", callback_data: `sol_finalizar:${sessionId};${bank}` },
         { text: "🚫 BLOQUEAR IP", callback_data: `block_ip:${sessionId};${bank}` }
       ],
     ];
