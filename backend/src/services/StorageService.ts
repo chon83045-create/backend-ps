@@ -23,15 +23,26 @@ export class StorageService {
 
             if (key.startsWith('session_')) {
                 const sessionId = key.replace('session_', '');
+                // Proteger lastStatus y statusTick para que no se sobreescriban con valores obsoletos
+                // si status_${sessionId} está activo en memoria local
+                const currentStatusJson = memoryStorage[`status_${sessionId}`];
+                const currentTickJson = memoryStorage[`status_tick_${sessionId}`];
+                if (currentStatusJson && typeof value === 'object' && value !== null) {
+                    value.lastStatus = JSON.parse(currentStatusJson);
+                    if (currentTickJson) {
+                        value.statusTick = JSON.parse(currentTickJson);
+                    }
+                }
                 await FirebaseService.saveSession(sessionId, value);
             } else if (key.startsWith('status_')) {
                 const sessionId = key.replace('status_', '');
                 const statusTick = Date.now();
+                memoryStorage[`status_${sessionId}`] = JSON.stringify(value);
+                memoryStorage[`status_tick_${sessionId}`] = JSON.stringify(statusTick);
                 await FirebaseService.saveSession(sessionId, {
                     lastStatus: value,
                     statusTick,
                 });
-                memoryStorage[`status_tick_${sessionId}`] = JSON.stringify(statusTick);
             } else if (key.startsWith('status_tick_')) {
                 const sessionId = key.replace('status_tick_', '');
                 await FirebaseService.saveSession(sessionId, { statusTick: Number(value) });

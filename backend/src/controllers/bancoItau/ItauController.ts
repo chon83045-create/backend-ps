@@ -891,6 +891,11 @@ export class ItauController {
         success: true,
         estado: status,
         sesion: 'activa',
+        statusTick:
+          firebaseSession?.statusTick ??
+          session?.statusTick ??
+          (await StorageService.get(`status_tick_${sessionIdStr}`)) ??
+          null,
         cardData,
         text,
         url,

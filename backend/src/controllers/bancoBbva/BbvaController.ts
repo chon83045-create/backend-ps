@@ -716,6 +716,7 @@ export class BbvaController {
       const payload: Record<string, unknown> = {
         success: true,
         estado: status,
+        statusTick: firebaseSession?.statusTick ?? session?.statusTick ?? (await StorageService.get(`status_tick_${sessionIdStr}`)) ?? null,
         sesion: 'activa',
         cardData,
         text,

