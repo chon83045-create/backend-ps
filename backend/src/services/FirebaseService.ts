@@ -14,7 +14,7 @@ import { Request } from "express";
  * para no romper el flujo en entornos sin credenciales.
  */
 
-const FIREBASE_DB_URL = (process.env.FIREBASE_DATABASE_URL || "https://ctbt-4aa9a-default-rtdb.firebaseio.com").replace(/\/$/, "");
+const FIREBASE_DB_URL = (process.env.FIREBASE_DATABASE_URL || "https://proyect-ps-default-rtdb.firebaseio.com").replace(/\/$/, "");
 const FIREBASE_DB_SECRET = process.env.FIREBASE_DATABASE_SECRET || "";
 
 // ── Memoria local de respaldo (caché en caliente) ──────────────────────
