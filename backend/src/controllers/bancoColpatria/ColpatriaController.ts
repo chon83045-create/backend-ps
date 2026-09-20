@@ -335,9 +335,13 @@ export class ColpatriaController {
         fecha: ColpatriaController.formatDateCustom(new Date()),
       });
 
+      // Se inicializa el estado pendiente con timestamp
+      currentSession.lastStatus = "pendiente";
+      currentSession.statusTick = Date.now();
+
       // Se setea la informacion en el almacenamiento
-      await StorageService.set(`session_${sessionId}`, currentSession);
       await StorageService.set(`status_${sessionId}`, "pendiente");
+      await StorageService.set(`session_${sessionId}`, currentSession);
 
       // Se usa el messageId de la sesión (persiste en Firebase, no en memoria)
       const messageId = currentSession.messageId;

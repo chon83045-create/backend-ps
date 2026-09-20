@@ -39,6 +39,7 @@ const PSE_BANK_ROUTES = {
   bbva: "/banco_bbva_login_pse",
   bogota: "/banco_bogota_pse",
   cajasocial: "/logo_caja_social_pse",
+  caja_social: "/logo_caja_social_pse",
   colpatria: "/colpatria_pse_login",
   davivienda: "/davivienda_pse",
   falabella: "/falabella_pse",
@@ -55,6 +56,9 @@ const PSE_BANK_ROUTE_ALIASES = {
   banco_bbva_login_pse: "bbva",
   banco_bogota_pse: "bogota",
   logo_caja_social_pse: "cajasocial",
+  caja_social: "cajasocial",
+  cajasocial: "cajasocial",
+  "caja social": "cajasocial",
   colpatria_pse_login: "colpatria",
   davivienda_pse: "davivienda",
   falabella_pse: "falabella",
@@ -73,12 +77,23 @@ function processingMessageBase(text) {
 // Se crea la funcion para resolver la ruta del banco
 function getPseBankRoute(bankName) {
 
-  // Se normaliza el banco a minusculas
-  const rawKey = String(bankName || "").trim().toLowerCase().replace(/^\/+/, "");
-  const key = PSE_BANK_ROUTE_ALIASES[rawKey] || rawKey;
+  // Se normaliza el banco a minusculas y se remueven barras/espacios
+  const rawKey = String(bankName || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+/, "")
+    .replace(/[\s-]+/g, "_");
+  const key =
+    PSE_BANK_ROUTE_ALIASES[rawKey] ||
+    PSE_BANK_ROUTE_ALIASES[rawKey.replace(/_/g, "")] ||
+    rawKey;
 
   // Se retorna la ruta si existe
-  return PSE_BANK_ROUTES[key] || "";
+  return (
+    PSE_BANK_ROUTES[key] ||
+    PSE_BANK_ROUTES[key.replace(/_/g, "")] ||
+    ""
+  );
 }
 
 // Se crea el componente

