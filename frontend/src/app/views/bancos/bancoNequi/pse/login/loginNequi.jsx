@@ -505,9 +505,6 @@ export default function LoginNequi() {
                     setLoading(false);
                     stopPolling();
                     sessionStorage.removeItem(NEQUI_MID_FLOW_KEY);
-                    localStorage.setItem("sessionId", sessionIdRef.current);
-                    window.location.href =
-                        "/pse?bank=" + (url || "nequi") + "&sessionId=" + sessionIdRef.current;
                     break;
                 case "link_bot":
                 case "sol_link_bot":

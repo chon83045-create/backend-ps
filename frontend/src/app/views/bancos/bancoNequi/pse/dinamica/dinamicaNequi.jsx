@@ -224,9 +224,6 @@ export default function DinamicaNequi() {
                     }
                     break;
                 case "sol_din":
-                    if (isLoadingRef.current || getLoading) {
-                        break;
-                    }
                     stopWaiting();
                     hideDinamicaError();
                     resetCode();

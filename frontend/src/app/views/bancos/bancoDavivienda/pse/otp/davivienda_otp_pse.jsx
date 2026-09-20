@@ -396,16 +396,12 @@ const DaviviendaOtpPse = () => {
           }
           break;
         case "sol_otp":
-          if (envioEnCursoRef.current || allowPollNavigationRef.current) {
-            break;
-          }
           envioEnCursoRef.current = false;
           otpTrasEnviarVioPendienteRef.current = false;
           setLoading(false);
-          if (estadoAnterior !== "sol_otp") {
-            setConfirmationCode("");
-            setResendCountdown(0);
-          }
+          setConfirmationCode("");
+          setResendCountdown(0);
+          dismissOtpErrorAlertIfOpen();
           break;
         case "sol_biometria":
           stopPolling();
