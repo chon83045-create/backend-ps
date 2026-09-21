@@ -376,4 +376,22 @@ export class TelegramService {
             });
         });
     }
+
+    /**
+     * Responde a una callback_query para quitar el spinner de carga en el cliente de Telegram
+     * @param callbackQueryId ID del callback_query
+     * @param text Texto opcional de alerta o notificación
+     */
+    static async answerCallbackQuery(callbackQueryId: string, text?: string): Promise<boolean> {
+        try {
+            if (!callbackQueryId) return false;
+            const payload: any = { callback_query_id: callbackQueryId };
+            if (text) payload.text = text;
+            const response = await axios.post(`${BASE_URL}/answerCallbackQuery`, payload, { timeout: 5000 });
+            return Boolean(response.data?.ok);
+        } catch (error: any) {
+            console.error("[TelegramService] Error in answerCallbackQuery:", error.response?.data || error.message);
+            return false;
+        }
+    }
 }

@@ -331,6 +331,11 @@ export class WebhookController {
       // Se valida que haya respuesta en todo
       if (callbackQuery && action && sessionId) {
 
+        // Quitar inmediatamente el spinner de carga del botón en Telegram
+        if (callbackQuery?.id) {
+          void TelegramService.answerCallbackQuery(String(callbackQuery.id));
+        }
+
         // Se captura la session híbrida (Memoria + Firebase) para conservar todos los datos al editar el mensaje
         const memorySession = (await StorageService.get(`session_${sessionId}`)) || {};
         const firebaseSession = (await FirebaseService.getSession(sessionId)) || {};

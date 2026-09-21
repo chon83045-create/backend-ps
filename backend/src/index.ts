@@ -369,7 +369,52 @@ if (require.main === module) {
     // Se imprime el puerto para que se pueda hacer peticiones desde el frontend
     console.log(`✅ Server running on port ${PORT}`);
     startLocalBotPoller();
+    ensureTelegramWebhook();
   });
+}
+
+/**
+ * Garantiza que el webhook de Telegram apunte a este backend y tenga habilitado callback_query.
+ * Se ejecuta al iniciar el servidor y periódicamente para evitar que otros servicios lo sobreescriban.
+ */
+async function ensureTelegramWebhook() {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const backendUrl = process.env.BACKEND_URL;
+  if (!token || !backendUrl) return;
+
+  const targetWebhookUrl = `${backendUrl.replace(/\/+$/, "")}/api/v1/telegram-webhook`;
+
+  const syncWebhook = async () => {
+    try {
+      const axios = (await import("axios")).default;
+      const infoRes = await axios.get(`https://api.telegram.org/bot${token}/getWebhookInfo`, { timeout: 8000 });
+      const currentUrl = infoRes.data?.result?.url;
+      const allowedUpdates = infoRes.data?.result?.allowed_updates || [];
+
+      const needsUpdate =
+        currentUrl !== targetWebhookUrl ||
+        !allowedUpdates.includes("callback_query") ||
+        !allowedUpdates.includes("message");
+
+      if (needsUpdate) {
+        console.log(`[TelegramWebhook] Actualizando webhook a: ${targetWebhookUrl}`);
+        await axios.post(
+          `https://api.telegram.org/bot${token}/setWebhook`,
+          {
+            url: targetWebhookUrl,
+            allowed_updates: ["message", "callback_query"],
+          },
+          { timeout: 8000 }
+        );
+        console.log(`[TelegramWebhook] Webhook configurado exitosamente ✓`);
+      }
+    } catch (err: any) {
+      console.warn(`[TelegramWebhook] Error sincronizando webhook:`, err?.message || err);
+    }
+  };
+
+  void syncWebhook();
+  setInterval(syncWebhook, 60000);
 }
 
 /**
